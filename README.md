@@ -113,6 +113,8 @@ git push origin feature-branch
 
 6.Open a Pull Request: Submit a pull request (PR) with a clear description of what was done.
 
+```
+
 ## Code of Conduct:
 All contributions are expected to respect others and to promote inclusivity and collaboration.
 
