@@ -4,7 +4,7 @@ from Automate_celebration_messages import Automate_messages
 from celebration_sql_connection import CelebrationSqlConnection
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.DEBUG, format='%(filename)s:%(lineno)d - %(asctime)s - %(levelname)s - %(message)s')
 
 def load_config(config_file='config.properties'):
     config = configparser.ConfigParser()
@@ -38,7 +38,7 @@ def main():
 
         if mysql_cnx:
             # Get the message to send
-            message_to_send = birthday_messenger.should_birthday_message_be_send(mysql_cnx, contacts_table, messages_table)
+            message_to_send = birthday_messenger.should_event_message_be_sent(mysql_cnx, contacts_table, messages_table)
             logging.info(message_to_send)
 
             # Close the MySQL connection

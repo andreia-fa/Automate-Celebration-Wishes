@@ -2,7 +2,7 @@ import mysql.connector
 import logging
 
 # Configure logging
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.DEBUG, format='%(filename)s:%(lineno)d - %(asctime)s - %(levelname)s - %(message)s')
 
 class CelebrationSqlConnection:
 
@@ -50,19 +50,51 @@ class CelebrationSqlConnection:
                 logging.error("Could not connect to the database")
                 return None
             
-    def get_celebration_messages(cnx, messages_table):
+    def get_contacts_with_event_types(self, cnx, table_name):
         if cnx:
             cursor = cnx.cursor()
-            query = f"SELECT text_message FROM {messages_table} WHERE type = 'birthday'"
+            query = f"SELECT Username, Message_receiver, Birthday_date, Recurrence, Type FROM {table_name}"
             try:
                 cursor.execute(query)
-                messages = cursor.fetchall()
+                rows = cursor.fetchall()
+                contacts_with_events = {}
+                
+                for row in rows:
+                    name = row[0]
+                    event_date = row[2].strftime('%Y-%m-%d')
+                    message_rec = row[1]
+                    recurrence = row[3]
+                    event_type = row[4]  # This is the new field added
+                    contacts_with_events[name] = (event_date, message_rec, recurrence, event_type)
+                    
                 cursor.close()
-                if messages:
-                    logging.debug(f"Celebration messages: {messages}")
-                    return messages
+                logging.debug(f"contacts_with_events: {contacts_with_events}")
+                return contacts_with_events
+            
+            except mysql.connector.Error as err:
+                logging.error(f"Error executing query: {err}")
+                cursor.close()
+                return None
+        else:
+            logging.error("Could not connect to the database")
+            return None
+
+
+
+            
+    def get_event_message(self, cnx, messages_table, event_type):
+        if cnx:
+            cursor = cnx.cursor()
+            query = f"SELECT text_message FROM {messages_table} WHERE Type = %s"
+            try:
+                cursor.execute(query, (event_type,))
+                result = cursor.fetchone()
+                if result:
+                    ret = result[0]  # Assuming Message is the first column
+                    #cursor.close()
+                    return ret  
                 else:
-                    logging.info("No celebration messages found.")
+                    logging.info(f"No message found for event type: {event_type}")
                     return None
             except mysql.connector.Error as err:
                 logging.error(f"Error executing query: {err}")
@@ -71,4 +103,6 @@ class CelebrationSqlConnection:
         else:
             logging.error("Could not connect to the database")
             return None
+
+
 
