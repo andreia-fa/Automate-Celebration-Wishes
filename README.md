@@ -43,6 +43,12 @@
 ## Usage
 (Provide detailed instructions, example commands, and expected outputs here. Include screenshots if applicable.)
 
+Instanciar a bd com os dados: 
+Correr o script de DDL
+Explicar o insert dos dados dos contactos
+Correr o script: messagem enviada.
+
+
 ## Features
 - Automatically sends celebration/birthday messages via Telegram text message.
 - Users can create and customize their own message templates.
@@ -113,6 +119,8 @@ git push origin feature-branch
 
 6.Open a Pull Request: Submit a pull request (PR) with a clear description of what was done.
 
+```
+
 ## Code of Conduct:
 All contributions are expected to respect others and to promote inclusivity and collaboration.
 
@@ -120,8 +128,8 @@ All contributions are expected to respect others and to promote inclusivity and 
 
 Follow the existing coding style in the project (if applicable).
 Use clear and descriptive names for variables, functions, and classes.
-Testing:
 
+Testing:
 Ensure your changes are tested. If the project includes tests, run them to make sure nothing is broken.
 If adding new features, include tests that cover the new functionality.
 Documentation:
