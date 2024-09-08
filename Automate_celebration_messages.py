@@ -3,7 +3,8 @@ from datetime import datetime
 import asyncio
 import logging
 
-# Configure logging
+# Configure loggingcustomize_message
+
 logging.basicConfig(level=logging.DEBUG, format='%(filename)s:%(lineno)d - %(asctime)s - %(levelname)s - %(message)s')
 
 class Automate_messages:
@@ -30,11 +31,22 @@ class Automate_messages:
             
             if celebration_message:
                 if not self.has_message_been_sent(mysql_cnx, name, message_id, event_type):
-                    logging.info(f"Sending {event_type} message to {name}. Message: {celebration_message}")
-                    send_status = self.send_msg(name, phone_number, celebration_message)
+                    # Customize the message
+                    personal_relationship = self.get_personal_relationship(mysql_cnx, name, contacts_table)
+                    customized_message = self.customize_message(
+                        celebration_message,
+                        name,
+                        personal_relationship,
+                        event_type,
+                        event_date
+                    )
+                    
+                    logging.info(f"Sending {event_type} message to {name}. Message: {customized_message}")
+                    send_status = self.send_msg(name, phone_number, customized_message)
+                    
                     if send_status == "Success":
-                        self.log_message_sent(mysql_cnx, name, celebration_message)
-                        logging.info(f"Sent {event_type} message to {name}: {celebration_message}")
+                        self.log_message_sent(mysql_cnx, name, customized_message)
+                        logging.info(f"Sent {event_type} message to {name}: {customized_message}")
                     else:
                         logging.error(f"Failed to send {event_type} message to {name}")
                 else:
@@ -44,6 +56,64 @@ class Automate_messages:
 
         return "Event messages processed."
 
+    
+    def calculate_months_since(self, date_str):
+        """Calculate the number of months since a given date."""
+        try:
+            birth_date = datetime.strptime(date_str, '%Y-%m-%d')
+            today = datetime.now()
+            months = (today.year - birth_date.year) * 12 + today.month - birth_date.month
+            return months
+        except ValueError:
+            return None
+        
+
+    def customize_message(self, message_template, name, personal_relationship, type_, date_str=None):
+        """
+        Customize message by replacing placeholders.
+
+        :param message_template: The message template with placeholders.
+        :param name: The name to replace (#username#) placeholder.
+        :param personal_relationship: The personal relationship to replace (#username#) placeholder.
+        :param type_: Type of message, used to replace (#puppy#) or (#baby#) placeholder.
+        :param date_str: Date string used to calculate months for (#monthplaceholder#).
+        :return: Customized message.
+        """
+        # Replace (#username#) placeholder with personal relationship
+        message = message_template.replace('(#username#)', personal_relationship)
+        
+        # Replace (#puppy#) or (#baby#) placeholder with the name if applicable
+        if type_ == 'puppy':
+            message = message.replace('(#puppy#)', name)
+        elif type_ == 'baby':
+            message = message.replace('(#baby#)', name)
+        
+        # Replace (#monthplaceholder#) with the number of months
+        if date_str:
+            months = self.calculate_months_since(date_str)
+            if months is not None:
+                message = message.replace('(#monthplaceholder#)', str(months))
+            else:
+                message = message.replace('(#monthplaceholder#)', 'unknown')
+        
+        return message
+    
+
+    def get_personal_relationship(self, cnx, person_name, table_name):
+        """Fetch personal relationship for a given person from the contact table."""
+        cursor = cnx.cursor()
+        query = f"SELECT Personal_relationship FROM {table_name} WHERE Username = %s"
+        try:
+            cursor.execute(query, (person_name,))
+            result = cursor.fetchone()
+            if result:
+                return result[0]
+            return "Friend"  # Default value if not found
+        except mysql.connector.Error as err:
+            logging.error(f"Error fetching personal relationship: {err}")
+            return "Friend"
+        finally:
+            cursor.close()
 
     def get_today_date_details(self):
         today = datetime.now()
