@@ -1,7 +1,9 @@
 from telethon import TelegramClient
-from datetime import datetime
+from datetime import datetime, timedelta
 import asyncio
 import logging
+import random
+
 
 # Configure loggingcustomize_message
 
@@ -36,7 +38,6 @@ class Automate_messages:
                     customized_message = self.customize_message(
                         celebration_message,
                         name,
-                        personal_relationship,
                         event_type,
                         event_date
                     )
@@ -56,19 +57,77 @@ class Automate_messages:
 
         return "Event messages processed."
 
-    
-    def calculate_months_since(self, date_str):
-        """Calculate the number of months since a given date."""
-        try:
-            birth_date = datetime.strptime(date_str, '%Y-%m-%d')
-            today = datetime.now()
-            months = (today.year - birth_date.year) * 12 + today.month - birth_date.month
-            return months
-        except ValueError:
-            return None
-        
+    def send_nurturing_messages(mysql_cnx, contacts_table, messages_table, birthday_messenger):
+        """
+        Sends nurturing messages to all contacts who haven't received one in the last two months.
+        """
+        today = datetime.now()
+        cursor = mysql_cnx.cursor()
 
-    def customize_message(self, message_template, name, personal_relationship, type_, date_str=None):
+        # Get all contacts from the contacts table
+        query_contacts = f"SELECT Username, Phone_Number FROM {contacts_table}"
+        cursor.execute(query_contacts)
+        contacts = cursor.fetchall()
+
+        # Get a Nurturing message from the messages table
+        query_message = f"SELECT text_message FROM {messages_table} WHERE Type = 'Nurturing'"
+        cursor.execute(query_message)
+        nurturing_messages = cursor.fetchall()
+
+        if not nurturing_messages:
+            logging.error("No 'Nurturing' messages found in the messages table.")
+            return
+
+        for contact in contacts:
+            username, phone_number = contact
+            
+            # Check if a nurturing message was sent in the last two months
+            query_last_sent = """
+                SELECT date_sent FROM message_log
+                WHERE Username = %s AND Type = 'Nurturing'
+                ORDER BY date_sent DESC
+                LIMIT 1
+            """
+            cursor.execute(query_last_sent, (username,))
+            last_sent_result = cursor.fetchone()
+
+            # If a nurturing message was sent within the last two months, skip this contact
+            if last_sent_result:
+                last_sent_date = last_sent_result[0]
+                if last_sent_date > (today - timedelta(days=60)):
+                    logging.info(f"Nurturing message for {username} was sent recently, skipping.")
+                    continue
+
+            # Randomly choose a nurturing message
+            nurturing_message = random.choice(nurturing_messages)[0]
+
+            # Personalize the message with the contact's name
+            personalized_message = nurturing_message.replace("(#username#)", username)
+
+            # Send the message using the existing send_msg method from Automate_messages
+            send_status = birthday_messenger.send_msg(username, phone_number, personalized_message)
+            
+            if send_status == "Success":
+                # Log that the message was sent using the existing log_message_sent method
+                birthday_messenger.log_message_sent(mysql_cnx, username, personalized_message)
+                logging.info(f"Nurturing message sent to {username}.")
+            else:
+                logging.error(f"Failed to send nurturing message to {username}.")
+
+        cursor.close()
+
+    def calculate_months_since(self, date_str):
+            """Calculate the number of months since a given date."""
+            try:
+                birth_date = datetime.strptime(date_str, '%Y-%m-%d')
+                today = datetime.now()
+                months = (today.year - birth_date.year) * 12 + today.month - birth_date.month
+                return months
+            except ValueError:
+                return None
+            
+
+    def customize_message(self, message_template, name, type_, date_str=None):
         """
         Customize message by replacing placeholders.
 
@@ -80,7 +139,7 @@ class Automate_messages:
         :return: Customized message.
         """
         # Replace (#username#) placeholder with personal relationship
-        message = message_template.replace('(#username#)', personal_relationship)
+        message = message_template.replace('(#username#)', name)
         
         # Replace (#puppy#) or (#baby#) placeholder with the name if applicable
         if type_ == 'puppy':
@@ -88,16 +147,16 @@ class Automate_messages:
         elif type_ == 'baby':
             message = message.replace('(#baby#)', name)
         
-        # Replace (#monthplaceholder#) with the number of months
+        # Replace (#monthplaceholder#) with the number of months followed by "months"
         if date_str:
             months = self.calculate_months_since(date_str)
             if months is not None:
-                message = message.replace('(#monthplaceholder#)', str(months))
+                message = message.replace('(#monthplaceholder#)', f"{months} months")
             else:
-                message = message.replace('(#monthplaceholder#)', 'unknown')
+                message = message.replace('(#monthplaceholder#)', 'unknown months')
         
         return message
-    
+
 
     def get_personal_relationship(self, cnx, person_name, table_name):
         """Fetch personal relationship for a given person from the contact table."""

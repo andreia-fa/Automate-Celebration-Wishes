@@ -33,13 +33,16 @@ def main():
         # Connect to MySQL
         mysql_cnx = CelebrationSqlConnection.connect_to_mysql(host, port, user, password, db)
 
-        # Initialize Automate_birthday_messages
-        birthday_messenger = Automate_messages(session_file_name, app_id, app_hash, CelebrationSqlConnection())
+        # Initialize Automate_messages
+        automate_messages = Automate_messages(session_file_name, app_id, app_hash, CelebrationSqlConnection())
 
         if mysql_cnx:
             # Get the message to send
-            message_to_send = birthday_messenger.should_event_message_be_sent(mysql_cnx, contacts_table, messages_table)
+            message_to_send = automate_messages.should_event_message_be_sent(mysql_cnx, contacts_table, messages_table)
             logging.info(message_to_send)
+
+            # Send nurturing messages
+            automate_messages.send_nurturing_messages(mysql_cnx, contacts_table, messages_table)
 
             # Close the MySQL connection
             mysql_cnx.close()
