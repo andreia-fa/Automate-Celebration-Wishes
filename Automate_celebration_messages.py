@@ -116,7 +116,7 @@ class Automate_messages:
         Customize message by replacing placeholders.
         """
         # Replace (#username#) placeholder with contact name
-        message = message_template.replace('(#username#)', name)
+        message = message_template.replace('{name}', name)
         
         # Replace (#puppy#) or (#baby#) placeholder with the name if applicable
         if type_ == 'puppy':
