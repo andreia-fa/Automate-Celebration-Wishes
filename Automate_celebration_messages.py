@@ -74,7 +74,7 @@ class Automate_messages:
             query_last_sent = """
                 SELECT date_sent FROM message_log
                 WHERE contact_id = (SELECT id FROM contacts_info WHERE username = %s)
-                AND Type = 'Nurturing'
+                AND event_type = 'Nurturing'
                 ORDER BY date_sent DESC
                 LIMIT 1
             """
@@ -108,16 +108,17 @@ class Automate_messages:
 
     def customize_message(self, message_template, name, type_, date_str=None):
         """
-        Customize message by replacing placeholders.
+        Customize message by replacing placeholders, including {month_count}.
         """
         message = message_template.replace("{name}", name)
-        
-        if type_ == 'puppy':
-            message = message.replace("{puppy}", name)
-        elif type_ == 'baby':
-            message = message.replace("{baby}", name)
-        
+
+        if type_ in ["puppy", "baby"] and date_str:
+            event_date = datetime.strptime(date_str, "%Y-%m-%d")
+            month_count = (datetime.now().year - event_date.year) * 12 + (datetime.now().month - event_date.month)
+            message = message.replace("#{month_count}", str(month_count))
+
         return message
+
 
     def has_message_been_sent(self, cnx, person_name, message_id, event_type):
         cursor = cnx.cursor()

@@ -120,19 +120,52 @@ class CelebrationSqlConnection:
         cursor = cnx.cursor()
         today = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-        logging.debug(f"📝 Logging message sent for {person_name}, Event: {event_type}")
+        # 1️⃣ Check event_type Before INSERT
+        if not event_type:
+            logging.error("🚨 event_type is missing! Skipping log insertion.")
+            return
+
+        # 2️⃣ Validate event_type Before INSERT
+        if not isinstance(event_type, str):
+            logging.error(f"🚨 event_type is not a string! Received: {type(event_type)} - {event_type}")
+            return
+
+        # 3️⃣ Double-Check the event_type Data Source
+        valid_event_types = {'birthday', 'puppy', 'baby', 'christmas', 'new year'}
+        if event_type.lower() not in valid_event_types:
+            logging.warning(f"⚠️ Unrecognized event_type: '{event_type}'. Double-check data source.")
+
+        # 4️⃣ Check for Encoding Issues
+        try:
+            event_type.encode('utf-8')
+        except UnicodeEncodeError as e:
+            logging.error(f"🚨 Encoding issue detected in event_type: {e}")
+            return
+
+        # Ensure event_type does not exceed the database column limit
+        if len(event_type) > 50:
+            logging.warning(f"🚨 event_type '{event_type}' too long! Trimming to 50 characters.")
+            event_type = event_type[:50]
 
         query = """
-        INSERT INTO message_log (contact_id, message_id, event_type, sent_message, date_sent, status)
+        INSERT INTO message_log (contact_id, message_id, sent_message, event_type, date_sent, status)
         VALUES (
             (SELECT id FROM contacts_info WHERE username = %s), 
             %s, %s, %s, %s, 'sent'
         )
         """
         try:
+            # Extra logging before execution
+            logging.debug(f"⚠️ FINAL INSERT VALUES:")
+            logging.debug(f"   Username: {person_name}")
+            logging.debug(f"   MessageID: {message_id}")
+            logging.debug(f"   EventType: '{event_type}' (Length: {len(event_type)})")
+            logging.debug(f"   Sent Message: '{message_text}' (Length: {len(message_text)})")
+
             cursor.execute(query, (person_name, message_id, event_type, message_text, today))
             cnx.commit()
             logging.info(f"✅ Message logged for {person_name}, Event: {event_type}")
+
         except Exception as e:
             logging.error(f"❌ Error logging message: {e}")
         finally:
