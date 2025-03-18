@@ -19,7 +19,10 @@ class Automate_messages:
             logging.info("No contacts with events today.")
             return "No contacts with events today!!!"
         
-        for name, (event_date, mobile_number, recurrence, event_type) in contacts_with_events.items():
+        for name, (event_date, mobile_number, category, recurrence, event_type) in contacts_with_events.items():
+            # 🔥 NEW: Fetch event_type dynamically from category
+            event_type = self.sql_connection.get_event_type(mysql_cnx, name)
+            
             # Fetch the last sent message
             last_message_text = self.sql_connection.get_last_sent_message(mysql_cnx, name)
             
@@ -46,20 +49,22 @@ class Automate_messages:
 
         return "Event messages processed."
 
+
     def send_nurturing_messages(self, mysql_cnx, messages_table):
         """
         Sends nurturing messages to all contacts who haven't received one in the last two months.
+        Only sends messages to persons (not puppies or babies).
         """
         today = datetime.now()
         cursor = mysql_cnx.cursor()
 
-        # Get all contacts
-        query_contacts = "SELECT Username, mobile_number FROM contacts_info"
+        # Exclude puppies & babies
+        query_contacts = "SELECT Username, mobile_number FROM contacts_info WHERE category = 'person'"
         cursor.execute(query_contacts)
         contacts = cursor.fetchall()
 
         # Get a Nurturing message
-        query_message = f"SELECT text_message FROM {messages_table} WHERE type = 'Nurturing'"
+        query_message = f"SELECT text_message FROM {messages_table} WHERE type = 'nurturing'"
         cursor.execute(query_message)
         nurturing_messages = cursor.fetchall()
 
@@ -74,7 +79,7 @@ class Automate_messages:
             query_last_sent = """
                 SELECT date_sent FROM message_log
                 WHERE contact_id = (SELECT id FROM contacts_info WHERE username = %s)
-                AND event_type = 'Nurturing'
+                AND event_type = 'nurturing'
                 ORDER BY date_sent DESC
                 LIMIT 1
             """
@@ -99,12 +104,13 @@ class Automate_messages:
             
             if send_status == "Success":
                 # ✅ FIXED: Correct `log_message_sent` call
-                self.sql_connection.log_message_sent(mysql_cnx, username, "Nurturing", None, personalized_message)
+                self.sql_connection.log_message_sent(mysql_cnx, username, "nurturing", None, personalized_message)
                 logging.info(f"✅ Nurturing message sent to {username}.")
             else:
                 logging.error(f"❌ Failed to send nurturing message to {username}.")
 
         cursor.close()
+
 
     def customize_message(self, message_template, name, type_, date_str=None):
         """

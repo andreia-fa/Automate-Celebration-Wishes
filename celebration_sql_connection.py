@@ -52,7 +52,7 @@ class CelebrationSqlConnection:
 
         cursor = cnx.cursor()
         query = """
-        SELECT c.username, c.mobile_number, e.event_date, e.recurrence, e.event_type
+        SELECT c.username, c.mobile_number, c.category,  e.event_date, e.recurrence, e.event_type
         FROM contacts_info c
         JOIN contact_events e ON c.id = e.contact_id
         WHERE 
@@ -73,6 +73,32 @@ class CelebrationSqlConnection:
             return None
         finally:
             cursor.close()
+
+    
+    def get_event_type(self, cnx, contact_id):
+        """
+        Determines the event type based on the contact's category.
+        """
+        cursor = cnx.cursor()
+        query = "SELECT category FROM contacts_info WHERE id = %s"
+        try:
+            cursor.execute(query, (contact_id,))
+            category = cursor.fetchone()
+            if category:
+                if category[0] == "puppy":
+                    return "puppy"
+                elif category[0] == "baby":
+                    return "baby"
+                else:
+                    return "birthday"
+            else:
+                return "birthday"  # Default for persons
+        except mysql.connector.Error as err:
+            logging.error(f"❌ Error fetching category: {err}")
+            return "birthday"  # Fallback default
+        finally:
+            cursor.close()
+
 
     def get_event_message(self, cnx, messages_table, event_type, last_message_text):
         if cnx:
