@@ -64,7 +64,7 @@ class CelebrationSqlConnection:
             cursor.execute(query)
             rows = cursor.fetchall()
             contacts_with_events = {
-                row[0]: (row[2].strftime('%Y-%m-%d') if row[2] else None, row[1], row[3], row[4]) for row in rows
+                row[0]: (row[3].strftime('%Y-%m-%d') if row[3] else None, row[1], row[4], row[5]) for row in rows
             }
             logging.debug(f"📅 Contacts with events today: {contacts_with_events}")
             return contacts_with_events
