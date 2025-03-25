@@ -146,33 +146,36 @@ class CelebrationSqlConnection:
         cursor = cnx.cursor()
         today = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-        # 1️⃣ Check event_type Before INSERT
-        if not event_type:
-            logging.error("🚨 event_type is missing! Skipping log insertion.")
+        # 1️⃣ Guard clause: message_id is required
+        if message_id is None:
+            logging.error(f"🚨 message_id is None for {person_name} — skipping log insertion.")
             return
 
-        # 2️⃣ Validate event_type Before INSERT
-        if not isinstance(event_type, str):
-            logging.error(f"🚨 event_type is not a string! Received: {type(event_type)} - {event_type}")
+        # 2️⃣ Guard: event_type must exist and be a string
+        if not event_type or not isinstance(event_type, str):
+            logging.error(f"🚨 Invalid event_type for {person_name}: {repr(event_type)}")
             return
 
-        # 3️⃣ Double-Check the event_type Data Source
-        valid_event_types = {'birthday', 'puppy', 'baby', 'christmas', 'new year'}
-        if event_type.lower() not in valid_event_types:
-            logging.warning(f"⚠️ Unrecognized event_type: '{event_type}'. Double-check data source.")
-
-        # 4️⃣ Check for Encoding Issues
+        # 3️⃣ Encoding validation
         try:
             event_type.encode('utf-8')
         except UnicodeEncodeError as e:
-            logging.error(f"🚨 Encoding issue detected in event_type: {e}")
+            logging.error(f"🚨 Encoding issue in event_type for {person_name}: {e}")
             return
 
-        # Ensure event_type does not exceed the database column limit
+        # 4️⃣ Trim overly long event_type
         if len(event_type) > 50:
-            logging.warning(f"🚨 event_type '{event_type}' too long! Trimming to 50 characters.")
+            logging.warning(f"⚠️ event_type too long for {person_name} (Length: {len(event_type)}). Trimming.")
             event_type = event_type[:50]
 
+        # 5️⃣ Log the exact values before insert
+        logging.debug("🧪 Preparing to insert log entry:")
+        logging.debug(f"   Username      : {person_name}")
+        logging.debug(f"   Message ID    : {message_id}")
+        logging.debug(f"   Event Type    : {repr(event_type)} (Length: {len(event_type)})")
+        logging.debug(f"   Message Text  : {repr(message_text)} (Length: {len(message_text)})")
+
+        # ✅ FIXED SQL INSERT: Correct parameter order
         query = """
         INSERT INTO message_log (contact_id, message_id, sent_message, event_type, date_sent, status)
         VALUES (
@@ -181,18 +184,11 @@ class CelebrationSqlConnection:
         )
         """
         try:
-            # Extra logging before execution
-            logging.debug(f"⚠️ FINAL INSERT VALUES:")
-            logging.debug(f"   Username: {person_name}")
-            logging.debug(f"   MessageID: {message_id}")
-            logging.debug(f"   EventType: '{event_type}' (Length: {len(event_type)})")
-            logging.debug(f"   Sent Message: '{message_text}' (Length: {len(message_text)})")
-
-            cursor.execute(query, (person_name, message_id, event_type, message_text, today))
+            cursor.execute(query, (person_name, message_id, message_text, event_type, today))
             cnx.commit()
-            logging.info(f"✅ Message logged for {person_name}, Event: {event_type}")
-
+            logging.info(f"✅ Message logged for {person_name} — Event: {event_type}")
         except Exception as e:
-            logging.error(f"❌ Error logging message: {e}")
+            logging.exception(f"❌ Error logging message for {person_name}:")
         finally:
             cursor.close()
+

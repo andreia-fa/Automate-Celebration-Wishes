@@ -19,7 +19,8 @@ class Automate_messages:
             logging.info("No contacts with events today.")
             return "No contacts with events today!!!"
         
-        for name, (event_date, mobile_number, category, recurrence, event_type) in contacts_with_events.items():
+        for name, (event_date, mobile_number, category, event_type) in contacts_with_events.items():
+
             # 🔥 NEW: Fetch event_type dynamically from category
             event_type = self.sql_connection.get_event_type(mysql_cnx, name)
             
@@ -51,10 +52,10 @@ class Automate_messages:
 
 
     def send_nurturing_messages(self, mysql_cnx, messages_table):
-        """
-        Sends nurturing messages to all contacts who haven't received one in the last two months.
-        Only sends messages to persons (not puppies or babies).
-        """
+    
+        """ Sends nurturing messages to all contacts who haven't received one in the last two months.
+        Only sends messages to persons (not puppies or babies)"""
+    
         today = datetime.now()
         cursor = mysql_cnx.cursor()
 
@@ -63,18 +64,18 @@ class Automate_messages:
         cursor.execute(query_contacts)
         contacts = cursor.fetchall()
 
-        # Get a Nurturing message
-        query_message = f"SELECT text_message FROM {messages_table} WHERE type = 'nurturing'"
+        # Get a list of nurturing messages with their IDs
+        query_message = f"SELECT id, text_message FROM {messages_table} WHERE type = 'nurturing'"
         cursor.execute(query_message)
         nurturing_messages = cursor.fetchall()
 
         if not nurturing_messages:
-            logging.error("❌ No 'Nurturing' messages found in the messages table.")
+            logging.error("❌ No 'nurturing' messages found in the messages table.")
             return
 
         for contact in contacts:
             username, mobile_number = contact
-            
+
             # Check if a nurturing message was sent in the last two months
             query_last_sent = """
                 SELECT date_sent FROM message_log
@@ -86,25 +87,26 @@ class Automate_messages:
             cursor.execute(query_last_sent, (username,))
             last_sent_result = cursor.fetchone()
 
-            # Skip if a nurturing message was recently sent
+            # Skip if one was sent recently
             if last_sent_result:
                 last_sent_date = last_sent_result[0]
                 if last_sent_date > (today - timedelta(days=60)):
                     logging.info(f"⚠️ Nurturing message for {username} was sent recently, skipping.")
                     continue
 
-            # Randomly choose a nurturing message
-            nurturing_message = random.choice(nurturing_messages)[0]
+            # Randomly select one nurturing message
+            message_id, message_text = random.choice(nurturing_messages)
 
-            # Personalize the message
-            personalized_message = nurturing_message.replace("{name}", username)
+            # Personalize message
+            personalized_message = message_text.replace("{name}", username)
 
             # Send the message
             send_status = self.send_msg(username, mobile_number, personalized_message)
-            
+
             if send_status == "Success":
-                # ✅ FIXED: Correct `log_message_sent` call
-                self.sql_connection.log_message_sent(mysql_cnx, username, "nurturing", None, personalized_message)
+                self.sql_connection.log_message_sent(
+                    mysql_cnx, username, "nurturing", message_id, personalized_message
+                )
                 logging.info(f"✅ Nurturing message sent to {username}.")
             else:
                 logging.error(f"❌ Failed to send nurturing message to {username}.")
