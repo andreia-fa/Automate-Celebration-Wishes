@@ -1,0 +1,16 @@
+INSERT INTO messages (text_message, type) VALUES
+('Merry Christmas {name}! May your holiday be less silent night and more party all night :)', 'christmas'),
+('Merry Christmas {name}! Wishing you peace, joy, and a cookie stash you do not have to share :)', 'christmas'),
+('Merry Christmas {name}! Deck the halls and spike the cocoa :)', 'christmas'),
+('Merry Christmas {name}! May your pajamas be cozy and your spirit extra :)', 'christmas'),
+('Merry Christmas {name}! Hope your holiday is wrapped in laughter :)', 'christmas'),
+('Merry Christmas {name}! Spread love like glitter (and vacuum later) :)', 'christmas'),
+('Merry Christmas {name}! May your heart be full and your inbox empty :)', 'christmas'),
+('Merry Christmas {name}! Keep it jolly, not chilly :)', 'christmas'),
+('Merry Christmas {name}! Tis the season to sparkle and snack :)', 'christmas'),
+('Merry Christmas {name}! Warm hugs, warm drinks, warm vibes :)', 'christmas'),
+('Merry Christmas {name}! Hope your tree is tall and your patience taller :)', 'christmas'),
+('Merry Christmas {name}! Jingle all the way—drama not included :)', 'christmas'),
+('Merry Christmas {name}! Have yourself a merry little recharge :)', 'christmas'),
+('Merry Christmas {name}! May your Wi-Fi and cocoa be strong :)', 'christmas'),
+('Merry Christmas {name}! Elf mode: ON :)', 'christmas');
