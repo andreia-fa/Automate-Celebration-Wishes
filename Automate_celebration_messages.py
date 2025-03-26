@@ -31,7 +31,7 @@ class Automate_messages:
             message_id, celebration_message = self.sql_connection.get_event_message(mysql_cnx, messages_table, event_type, last_message_text)
             
             if celebration_message:
-                if not self.has_message_been_sent(mysql_cnx, name, message_id, event_type):
+                if not self.has_message_been_sent(mysql_cnx, name, event_type):
                     # Customize the message
                     customized_message = self.customize_message(celebration_message, name, event_type, event_date)
                     
@@ -52,19 +52,19 @@ class Automate_messages:
 
 
     def send_nurturing_messages(self, mysql_cnx, messages_table):
-    
-        """ Sends nurturing messages to all contacts who haven't received one in the last two months.
-        Only sends messages to persons (not puppies or babies)"""
-    
-        today = datetime.now()
+        """ Sends nurturing messages to all contacts who haven't received one in the last two months,
+        and are not receiving a birthday message today.
+        Only sends messages to persons (not puppies or babies). """
+
+        today = datetime.now().date()
         cursor = mysql_cnx.cursor()
 
-        # Exclude puppies & babies
-        query_contacts = "SELECT Username, mobile_number FROM contacts_info WHERE category = 'person'"
+        # Get all contacts of type 'person'
+        query_contacts = "SELECT id, Username, mobile_number, birthday_date FROM contacts_info WHERE category = 'person'"
         cursor.execute(query_contacts)
         contacts = cursor.fetchall()
 
-        # Get a list of nurturing messages with their IDs
+        # Get a list of nurturing messages
         query_message = f"SELECT id, text_message FROM {messages_table} WHERE type = 'nurturing'"
         cursor.execute(query_message)
         nurturing_messages = cursor.fetchall()
@@ -74,33 +74,33 @@ class Automate_messages:
             return
 
         for contact in contacts:
-            username, mobile_number = contact
+            contact_id, username, mobile_number, birthday_date = contact
 
-            # Check if a nurturing message was sent in the last two months
+            # 1️⃣ Skip if today is their birthday
+            if birthday_date and birthday_date.month == today.month and birthday_date.day == today.day:
+                logging.info(f"🎂 {username} has a birthday today. Skipping nurturing message.")
+                continue
+
+            # 2️⃣ Skip if a nurturing message was sent recently
             query_last_sent = """
                 SELECT date_sent FROM message_log
-                WHERE contact_id = (SELECT id FROM contacts_info WHERE username = %s)
-                AND event_type = 'nurturing'
-                ORDER BY date_sent DESC
-                LIMIT 1
+                WHERE contact_id = %s AND event_type = 'nurturing'
+                ORDER BY date_sent DESC LIMIT 1
             """
-            cursor.execute(query_last_sent, (username,))
+            cursor.execute(query_last_sent, (contact_id,))
             last_sent_result = cursor.fetchone()
 
-            # Skip if one was sent recently
             if last_sent_result:
-                last_sent_date = last_sent_result[0]
+                last_sent_date = last_sent_result[0].date()
                 if last_sent_date > (today - timedelta(days=60)):
                     logging.info(f"⚠️ Nurturing message for {username} was sent recently, skipping.")
                     continue
 
-            # Randomly select one nurturing message
+            # Select and personalize a message
             message_id, message_text = random.choice(nurturing_messages)
-
-            # Personalize message
             personalized_message = message_text.replace("{name}", username)
 
-            # Send the message
+            # Send message
             send_status = self.send_msg(username, mobile_number, personalized_message)
 
             if send_status == "Success":
@@ -112,6 +112,7 @@ class Automate_messages:
                 logging.error(f"❌ Failed to send nurturing message to {username}.")
 
         cursor.close()
+
 
 
     def customize_message(self, message_template, name, type_, date_str=None):
@@ -128,41 +129,26 @@ class Automate_messages:
         return message
 
 
-    def has_message_been_sent(self, cnx, person_name, message_id, event_type):
+    def has_message_been_sent(self, cnx, person_name, event_type):
         cursor = cnx.cursor()
-        current_year = datetime.now().year
-        current_month = datetime.now().month
+        today = datetime.now().date()
 
-        logging.debug(f"Checking if a message has been sent for {person_name} ({event_type})")
+        logging.debug(f"Checking if a message has been sent today for {person_name} ({event_type})")
 
-        if event_type in ["Birthday", "Christmas", "New Year"]:
-            query = """
-            SELECT COUNT(*) FROM message_log 
-            WHERE contact_id = (SELECT id FROM contacts_info WHERE username = %s) 
-            AND YEAR(date_sent) = %s
-            """
-            params = (person_name, current_year)
-
-        elif event_type in ["baby", "puppy"]:
-            query = """
-            SELECT COUNT(*) FROM message_log 
-            WHERE contact_id = (SELECT id FROM contacts_info WHERE username = %s) 
-            AND YEAR(date_sent) = %s 
-            AND MONTH(date_sent) = %s
-            """
-            params = (person_name, current_year, current_month)
-
-        else:
-            logging.error(f"❌ No message was sent for {person_name} - Event Type: {event_type}")
-            return False
+        query = """
+        SELECT COUNT(*) FROM message_log 
+        WHERE contact_id = (SELECT id FROM contacts_info WHERE username = %s) 
+        AND event_type = %s
+        AND DATE(date_sent) = %s
+        """
+        params = (person_name, event_type, today)
 
         cursor.execute(query, params)
         count = cursor.fetchone()[0]
         cursor.close()
 
-        logging.debug(f"Message sent for {person_name} ({event_type}, message ID: {message_id}): {count}")
-
         return count > 0
+
 
     def send_msg(self, username_receiver, phone_number, msg):
         try:
