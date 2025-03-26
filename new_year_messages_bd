@@ -1,0 +1,16 @@
+INSERT INTO messages (text_message, type) VALUES
+('Happy New Year {name}! May your resolutions last longer than your leftover champagne :)', 'new year'),
+('Happy New Year {name}! New year, same fabulous you... just with better snacks :)', 'new year'),
+('Happy New Year {name}! Here is to more wins and fewer Zoom calls :)', 'new year'),
+('Happy New Year {name}! May your adventures be wild and your Wi-Fi stable :)', 'new year'),
+('Happy New Year {name}! This is your year to sparkle again :)', 'new year'),
+('Happy New Year {name}! Start strong, nap later :)', 'new year'),
+('Happy New Year {name}! May your playlists be fire all year long :)', 'new year'),
+('Happy New Year {name}! Let us toast to questionable decisions and good stories :)', 'new year'),
+('Happy New Year {name}! Your vibe is the resolution :)', 'new year'),
+('Happy New Year {name}! Do not forget to glam up and glow on :)', 'new year'),
+('Happy New Year {name}! Slay your goals, one nap at a time :)', 'new year'),
+('Happy New Year {name}! Another year of laughing too loud awaits :)', 'new year'),
+('Happy New Year {name}! Take a breath and own this year :)', 'new year'),
+('Happy New Year {name}! May your hustle stay bold and your snacks stay plenty :)', 'new year'),
+('Happy New Year {name}! Welcome to another chapter of you being amazing :)', 'new year');
