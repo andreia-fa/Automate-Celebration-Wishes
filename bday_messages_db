@@ -1,0 +1,16 @@
+INSERT INTO messages (text_message, type) VALUES
+('Happy Birthday {name}! Another year wiser? Or just better at pretending? :)', 'birthday'),
+('Happy Birthday {name}! Time to eat cake and blame it on tradition :)', 'birthday'),
+('Happy Birthday {name}! Wishing you laughter, joy, and no responsibilities today :)', 'birthday'),
+('Happy Birthday {name}! Keep shining like the cake candle you are :)', 'birthday'),
+('Happy Birthday {name}! Another year of fabulous chaos awaits :)', 'birthday'),
+('Happy Birthday {name}! You age like memes—only better :)', 'birthday'),
+('Happy Birthday {name}! May your inbox stay empty and your plate stay full :)', 'birthday'),
+('Happy Birthday {name}! Level up and laugh harder :)', 'birthday'),
+('Happy Birthday {name}! Hope your day is as iconic as your selfies :)', 'birthday'),
+('Happy Birthday {name}! You survived another trip around the sun—legendary :)', 'birthday'),
+('Happy Birthday {name}! May your dreams be big and your coffee even bigger :)', 'birthday'),
+('Happy Birthday {name}! Here’s to more cake, less stress :)', 'birthday'),
+('Happy Birthday {name}! Today is all about you—and snacks :)', 'birthday'),
+('Happy Birthday {name}! May the confetti follow you everywhere :)', 'birthday'),
+('Happy Birthday {name}! You are the sparkle this day deserves :)', 'birthday');
