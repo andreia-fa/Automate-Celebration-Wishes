@@ -1,0 +1,48 @@
+CREATE DATABASE IF NOT EXISTS celebrations_bot_db
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_unicode_ci;
+
+
+
+CREATE TABLE contacts_info (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(100) NOT NULL,
+    personal_relationship VARCHAR(100),
+    message_receiver VARCHAR(100) NOT NULL,
+    mobile_number VARCHAR(20),
+    birthday_date DATE,
+    category ENUM('person', 'puppy', 'baby') DEFAULT 'person',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+
+CREATE TABLE messages (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    text_message TEXT NOT NULL,
+    type VARCHAR(50) NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+
+CREATE TABLE contact_events (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    contact_id INT UNSIGNED NOT NULL,
+    event_type VARCHAR(50) NOT NULL,
+    event_date DATE NOT NULL,
+    recurrence ENUM('monthly', 'annual') DEFAULT 'annual',
+    FOREIGN KEY (contact_id) REFERENCES contacts_info(id)
+);
+
+
+CREATE TABLE message_log (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    contact_id INT UNSIGNED NOT NULL,
+    message_id INT UNSIGNED,
+    sent_message TEXT NOT NULL,
+    event_type VARCHAR(50) NOT NULL,
+    date_sent DATETIME NOT NULL,
+    status VARCHAR(20) DEFAULT 'sent',
+    FOREIGN KEY (contact_id) REFERENCES contacts_info(id),
+    FOREIGN KEY (message_id) REFERENCES messages(id)
+);
