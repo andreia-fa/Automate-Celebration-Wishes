@@ -2,6 +2,9 @@ import logging
 import random
 from datetime import datetime, timedelta
 from telethon import TelegramClient
+import os
+
+
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG, format='%(filename)s:%(lineno)d - %(asctime)s - %(levelname)s - %(message)s')
@@ -154,7 +157,11 @@ class Automate_messages:
         try:
             logging.debug(f"📩 Attempting to send message to {username_receiver} at {phone_number}: {msg}")
 
-            with TelegramClient(self.session_file_name, self.app_id, self.app_hash) as client:
+            # Dynamically build absolute path to session file
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+            session_file_path = os.path.join(base_dir, self.session_file_name)
+
+            with TelegramClient(session_file_path, self.app_id, self.app_hash) as client:
                 client.loop.run_until_complete(client.send_message(phone_number, msg))
                 logging.info(f"✅ Message successfully sent to {username_receiver}.")
 
@@ -163,3 +170,4 @@ class Automate_messages:
             return f"Error sending message to: {username_receiver}, error: {e}"
         
         return "Success"
+
