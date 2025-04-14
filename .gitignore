@@ -1,5 +1,5 @@
-*.pycconfig.properties
+*.pyc
+config.properties
 *.session
 celebrations-bot/lib/
 __pycache__/
-*.pyc
