@@ -161,13 +161,24 @@ class Automate_messages:
             base_dir = os.path.dirname(os.path.abspath(__file__))
             session_file_path = os.path.join(base_dir, self.session_file_name)
 
-            with TelegramClient(session_file_path, self.app_id, self.app_hash) as client:
-                client.loop.run_until_complete(client.send_message(phone_number, msg))
-                logging.info(f"✅ Message successfully sent to {username_receiver}.")
+            client = TelegramClient(session_file_path, self.app_id, self.app_hash)
+            client.start()  # Ensures authentication is used from session file
+
+            if not client.is_user_authorized():
+                logging.warning(f"⚠️ Session is NOT authenticated for {username_receiver}. Skipping message.")
+                return f"Session is not authenticated for: {username_receiver}"
+
+            client.loop.run_until_complete(client.send_message(phone_number, msg))
+            logging.info(f"✅ Message successfully sent to {username_receiver}.")
 
         except Exception as e:
             logging.error(f"❌ Error sending message to {username_receiver}: {e}")
             return f"Error sending message to: {username_receiver}, error: {e}"
-        
+
+        finally:
+            if 'client' in locals():
+                client.disconnect()
+
         return "Success"
+
 
