@@ -2,8 +2,8 @@ from telethon import TelegramClient
 import os
 
 session_path = '/home/almeidandreia/Automate-Celebration-Wishes/andreia_fa.session'
-api_id = YOUR_API_ID  # ← replace
-api_hash = 'YOUR_API_HASH'  # ← replace
+api_id = 25487110  # ← replace
+api_hash = '5771967ffe4b4e8168ffeff58c32bc45'  # ← replace
 
 if not os.path.exists(session_path):
     print("❌ Session file does not exist.")
