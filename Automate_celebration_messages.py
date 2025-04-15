@@ -134,23 +134,44 @@ class Automate_messages:
 
     def has_message_been_sent(self, cnx, person_name, event_type):
         cursor = cnx.cursor()
-        today = datetime.now().date()
+        
+        now = datetime.now()
 
-        logging.debug(f"Checking if a message has been sent today for {person_name} ({event_type})")
+        # Decide the filtering logic based on event_type
+        if event_type in ["birthday", "new year", "Christmas"]:
+            query = """
+                SELECT COUNT(*) FROM message_log 
+                WHERE contact_id = (SELECT id FROM contacts_info WHERE username = %s) 
+                AND event_type = %s
+                AND YEAR(date_sent) = %s
+            """
+            params = (person_name, event_type, now.year)
 
-        query = """
-        SELECT COUNT(*) FROM message_log 
-        WHERE contact_id = (SELECT id FROM contacts_info WHERE username = %s) 
-        AND event_type = %s
-        AND DATE(date_sent) = %s
-        """
-        params = (person_name, event_type, today)
+        elif event_type in ["puppy", "baby"]:
+            query = """
+                SELECT COUNT(*) FROM message_log 
+                WHERE contact_id = (SELECT id FROM contacts_info WHERE username = %s) 
+                AND event_type = %s
+                AND MONTH(date_sent) = %s AND YEAR(date_sent) = %s
+            """
+            params = (person_name, event_type, now.month, now.year)
+
+        else:  # fallback (e.g., nurturing) — use a rolling 60-day window
+            time_threshold = now - timedelta(days=60)
+            query = """
+                SELECT COUNT(*) FROM message_log 
+                WHERE contact_id = (SELECT id FROM contacts_info WHERE username = %s) 
+                AND event_type = %s
+                AND date_sent > %s
+            """
+            params = (person_name, event_type, time_threshold)
 
         cursor.execute(query, params)
         count = cursor.fetchone()[0]
         cursor.close()
 
         return count > 0
+
 
 
     def send_msg(self, username_receiver, phone_number, msg):
