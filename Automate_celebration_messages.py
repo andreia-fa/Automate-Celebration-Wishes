@@ -134,10 +134,8 @@ class Automate_messages:
 
     def has_message_been_sent(self, cnx, person_name, event_type):
         cursor = cnx.cursor()
-        
         now = datetime.now()
 
-        # Decide the filtering logic based on event_type
         if event_type in ["birthday", "new year", "Christmas"]:
             query = """
                 SELECT COUNT(*) FROM message_log 
@@ -156,7 +154,7 @@ class Automate_messages:
             """
             params = (person_name, event_type, now.month, now.year)
 
-        else:  # fallback (e.g., nurturing) — use a rolling 60-day window
+        else:  # nurturing or other future cases
             time_threshold = now - timedelta(days=60)
             query = """
                 SELECT COUNT(*) FROM message_log 
@@ -169,7 +167,6 @@ class Automate_messages:
         cursor.execute(query, params)
         count = cursor.fetchone()[0]
         cursor.close()
-
         return count > 0
 
 

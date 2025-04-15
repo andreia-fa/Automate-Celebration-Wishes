@@ -58,7 +58,8 @@ class CelebrationSqlConnection:
         WHERE 
             (e.recurrence = 'monthly' AND DAY(e.event_date) = DAY(NOW()))
             OR (e.recurrence = 'annual' AND MONTH(e.event_date) = MONTH(NOW()) AND DAY(e.event_date) = DAY(NOW()))
-            OR e.event_type IN ('Christmas', 'New Year')
+            OR (e.event_type = 'Christmas' AND MONTH(NOW()) = 12 AND DAY(NOW()) = 25)
+            OR (e.event_type = 'New Year' AND MONTH(NOW()) = 1 AND DAY(NOW()) = 1)
         """
         try:
             cursor.execute(query)
