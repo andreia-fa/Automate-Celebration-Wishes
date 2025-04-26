@@ -55,9 +55,12 @@ class Automate_messages:
 
 
     def send_nurturing_messages(self, mysql_cnx, messages_table):
-        """ Sends nurturing messages to all contacts who haven't received one in the last two months,
+        """ 
+        Sends nurturing messages to all contacts who haven't received *any* message 
+        (birthday, nurturing, etc.) in the last two months,
         and are not receiving a birthday message today.
-        Only sends messages to persons (not puppies or babies). """
+        Only sends messages to persons (not puppies or babies). 
+        """
 
         today = datetime.now().date()
         cursor = mysql_cnx.cursor()
@@ -84,10 +87,10 @@ class Automate_messages:
                 logging.info(f"🎂 {username} has a birthday today. Skipping nurturing message.")
                 continue
 
-            # 2️⃣ Skip if a nurturing message was sent recently
+            # 2️⃣ Skip if any message was sent recently (birthday, nurturing, anything)
             query_last_sent = """
                 SELECT date_sent FROM message_log
-                WHERE contact_id = %s AND event_type = 'nurturing'
+                WHERE contact_id = %s
                 ORDER BY date_sent DESC LIMIT 1
             """
             cursor.execute(query_last_sent, (contact_id,))
@@ -96,14 +99,14 @@ class Automate_messages:
             if last_sent_result:
                 last_sent_date = last_sent_result[0].date()
                 if last_sent_date > (today - timedelta(days=60)):
-                    logging.info(f"⚠️ Nurturing message for {username} was sent recently, skipping.")
+                    logging.info(f"⚠️ Some message was sent recently to {username}, skipping nurturing message.")
                     continue
 
-            # Select and personalize a message
+            # 3️⃣ Select and personalize a nurturing message
             message_id, message_text = random.choice(nurturing_messages)
             personalized_message = message_text.replace("{name}", username)
 
-            # Send message
+            # 4️⃣ Send message
             send_status = self.send_msg(username, mobile_number, personalized_message)
 
             if send_status == "Success":
@@ -115,7 +118,6 @@ class Automate_messages:
                 logging.error(f"❌ Failed to send nurturing message to {username}.")
 
         cursor.close()
-
 
 
     def customize_message(self, message_template, name, type_, date_str=None):
