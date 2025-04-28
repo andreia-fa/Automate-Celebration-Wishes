@@ -177,17 +177,27 @@ class Automate_messages:
         try:
             logging.debug(f"📩 Attempting to send message to {username_receiver} at {phone_number}: {msg}")
 
-            # Dynamically build absolute path to session file
             base_dir = os.path.dirname(os.path.abspath(__file__))
             session_file_path = os.path.join(base_dir, self.session_file_name)
 
             client = TelegramClient(session_file_path, self.app_id, self.app_hash)
-            client.start()  # Ensures authentication is used from session file
+            client.connect()
 
-            if not client.is_user_authorized():
-                logging.warning(f"⚠️ Session is NOT authenticated for {username_receiver}. Skipping message.")
-                return f"Session is not authenticated for: {username_receiver}"
+            if not client.is_connected():
+                logging.error(f"❌ Client failed to connect.")
+                return "Client connection failed."
 
+            if not client.loop.run_until_complete(client.is_user_authorized()):
+                logging.warning(f"⚠️ Session is not authorized. Trying manual login...")
+
+                try:
+                    client.loop.run_until_complete(client.start())
+                    logging.info("✅ Successfully re-authorized session after reconnect.")
+                except Exception as auth_error:
+                    logging.error(f"❌ Failed to re-authorize session: {auth_error}")
+                    return "Session re-authorization failed. Manual intervention needed."
+
+            # After confirming authorization, send the message
             client.loop.run_until_complete(client.send_message(phone_number, msg))
             logging.info(f"✅ Message successfully sent to {username_receiver}.")
 
@@ -200,5 +210,6 @@ class Automate_messages:
                 client.disconnect()
 
         return "Success"
+
 
 
