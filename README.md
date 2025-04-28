@@ -167,7 +167,14 @@ Make sure to provide clear and concise descriptions in your code comments.
 This project is licensed under the MIT License. See the LICENSE file for details.
 
 ## Credits
-(Provide acknowledgments and references here.)
+
+**In Loving Memory of Mickey**
+
+Every day with you was a celebration in itself.
+Your love and warmth remain my guiding light.
+You live on through me — in every act of kindness, in every celebration of life.
+
+**Celebrating you always**
 
 ## Support
 You can always reach me on telegram, under: @andreia_fa
