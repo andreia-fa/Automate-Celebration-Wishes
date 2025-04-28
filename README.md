@@ -89,6 +89,8 @@ Users can customize the following parameters in the configuration file:
   database.contacts_table = contacts_info
   database.messages_table = messages
 
+  ´´´
+
 **Telegram API**
  ```ini
 telegram.api_id = your_telegram_api_id  
