@@ -44,18 +44,18 @@ Ensure you have the following installed on your system:
 ### Instructions
 
 1. Clone the repository:
-   ```bash
+
    git clone https://github.com/yourusername/automate-birthday-messages.git
 
   2. Install the required dependencies:
-     ```bash
-     pip install -r requirements.txt
-     ```
+   
+      *pip install -r requirements.txt*
+
   3. Adapt the configuration file as needed.
   4. Run the main file:
-     ```bash
-     python main.py
-     ```
+
+     *python main.py*
+   
 
 ## Usage
 
@@ -67,8 +67,7 @@ Ensure you have the following installed on your system:
 
 3. **Start the automation**  
    Launch the main script:
-   ```bash
-   python main.py
+   *python main.py*
 
 
 ## Features
@@ -89,19 +88,19 @@ Users can customize the following parameters in the configuration file:
   database.contacts_table = contacts_info
   database.messages_table = messages
 
-  ´´´
-
-**Telegram API**
+## telegram
  ```ini
 telegram.api_id = your_telegram_api_id  
 telegram.api_hash = your_telegram_api_hash  
-telegram.session_file_name = your_telegram_session_file_name  
+telegram.session_file_name = your_telegram_session_file_name
 
-## SQL Table Definitions
+```
+
+## SQL tables
 
 ### contact info table
 
-sql
+```ini
 CREATE TABLE `contacts_info` (
   `Username` varchar(255) DEFAULT NULL,
   `Personal_relationship` varchar(255) DEFAULT NULL,
@@ -113,20 +112,22 @@ CREATE TABLE `contacts_info` (
   `Recurrence` varchar(255) DEFAULT NULL,
   `Type` varchar(255) DEFAULT NULL
 );
+
 ```
 
+```ini
 ### message table
 
-```sql
 CREATE TABLE `messages` (
   `id` int NOT NULL AUTO_INCREMENT,
   `text_message` text,
   `type` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`id`)
 );
+
 ```
 
-##Contributing
+## Contributing
 
 Contributing Guidelines:
 Contributions are welcome! Please follow these steps:
@@ -134,18 +135,17 @@ Contributions are welcome! Please follow these steps:
 1. Fork the Repository: Create a personal copy of the repository on GitHub.
 
 2. Create a New Branch:
-git checkout -b feature-branch
+*git checkout -b feature-branch*
 
 3. Make Your Changes: Implement your feature or fix the issue.
 4. Commit your Changes:
-git commit -m 'Add some feature'
+*git commit -m 'Add some feature'*
 
-5.Push to the Branch:
-git push origin feature-branch
+5. Push to the Branch:
+*git push origin feature-branch*
 
-6.Open a Pull Request: Submit a pull request (PR) with a clear description of what was done.
+6. Open a Pull Request: Submit a pull request (PR) with a clear description of what was done.
 
-```
 
 ## Code of Conduct:
 All contributions are expected to respect others and to promote inclusivity and collaboration.
@@ -174,12 +174,12 @@ You can always reach me on telegram, under: @andreia_fa
 
 ## FAQ
 
-Q: Isn't this a bit sad, so you no longer message your special ones, in their celebrations?
+Q: **Isn't this a bit sad, so you no longer message your special ones, in their celebrations?**
 
 A: The goal ist to *guarantee* no matter what, that they recieve at least *one message*, 
 ideally you should make their celebrations more special, how is up to you :) 
 
-Q: Can I create custom message templates?
+Q: **Can I create custom message templates?**
 
 A: Yes! Add new entries to the messages table.
 
