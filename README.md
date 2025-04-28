@@ -95,7 +95,7 @@ telegram.api_id = your_telegram_api_id
 telegram.api_hash = your_telegram_api_hash  
 telegram.session_file_name = your_telegram_session_file_name  
 
-## SQL Table Definitions
+´´´
 
 ## SQL Table Definitions
 
