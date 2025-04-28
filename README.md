@@ -5,6 +5,10 @@
 **Overview:**  
 This project automates the process of sending celebration wishes and birthday messages to your contacts through Telegram.
 
+## Further Reading
+For a deeper understanding of the project, check out the medium-series articles:
+- [Article 1 Title](link-to-medium-article)
+
 **Purpose:**  
 The project aims to simplify and personalize the process of sending greetings by automating the message-sending process.
 
