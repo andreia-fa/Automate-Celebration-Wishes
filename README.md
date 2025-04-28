@@ -171,9 +171,12 @@ You can always reach me on telegram, under: @andreia_fa
 ## FAQ
 
 Q: Isn't this a bit sad, so you no longer message your special ones, in their celebrations?
-A: The goal ist to *guarantee* no matter what, that they recieve at least *one message*, ideally you should make their celebrations more special, how is up to you :) 
+
+A: The goal ist to *guarantee* no matter what, that they recieve at least *one message*, 
+ideally you should make their celebrations more special, how is up to you :) 
 
 Q: Can I create custom message templates?
+
 A: Yes! Add new entries to the messages table.
 
 ## Changelog
