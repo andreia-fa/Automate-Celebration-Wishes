@@ -7,7 +7,7 @@ This project automates the process of sending celebration wishes and birthday me
 
 ## Further Reading
 
-# Medium Article Series
+### Medium Article Series
 
 If you want to follow a detailed, step-by-step guide about the Celebration Bot, check out the articles below:
 
