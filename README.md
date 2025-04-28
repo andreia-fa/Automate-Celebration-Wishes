@@ -122,7 +122,9 @@ CREATE TABLE `messages` (
   PRIMARY KEY (`id`)
 );
 
-## Contributing
+´´´
+
+##Contributing
 
 Contributing Guidelines:
 Contributions are welcome! Please follow these steps:
