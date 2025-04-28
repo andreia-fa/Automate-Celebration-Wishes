@@ -99,8 +99,7 @@ telegram.session_file_name = your_telegram_session_file_name
 
 **contact info table**
 
-```ini
-
+```sql
 CREATE TABLE `contacts_info` (
   `Username` varchar(255) DEFAULT NULL,
   `Personal_relationship` varchar(255) DEFAULT NULL,
@@ -113,15 +112,15 @@ CREATE TABLE `contacts_info` (
   `Type` varchar(255) DEFAULT NULL
 );
 
+
 **message table**
+
 CREATE TABLE `messages` (
   `id` int NOT NULL AUTO_INCREMENT,
   `text_message` text,
   `type` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`id`)
 );
-
-...
 
 ## Contributing
 
