@@ -100,29 +100,51 @@ telegram.session_file_name = your_telegram_session_file_name
 
 ### contact info table
 
-```ini
-CREATE TABLE `contacts_info` (
-  `Username` varchar(255) DEFAULT NULL,
-  `Personal_relationship` varchar(255) DEFAULT NULL,
-  `Message_receiver` varchar(255) DEFAULT NULL,
-  `Telegram_name` varchar(255) DEFAULT NULL,
-  `Birthday_date` date DEFAULT NULL,
-  `Created_at` date DEFAULT NULL,
-  `Updated_at` date DEFAULT NULL,
-  `Recurrence` varchar(255) DEFAULT NULL,
-  `Type` varchar(255) DEFAULT NULL
+## Database Setup
+
+This project requires the following tables:
+- `contacts_info`
+- `contact_events`
+- `messages`
+- `message_log`
+
+Here is the schema:
+
+```sql
+CREATE TABLE contacts_info (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(255) NOT NULL,
+    personal_relationship VARCHAR(255),
+    message_receiver VARCHAR(255) NOT NULL,
+    telegram_id VARCHAR(255),
+    birthday_date DATE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
-```
+CREATE TABLE contact_events (
+    id SERIAL PRIMARY KEY,
+    contact_id INT REFERENCES contacts_info(id) ON DELETE CASCADE,
+    event_type VARCHAR(50) NOT NULL,
+    recurrence VARCHAR(50) NOT NULL,
+    event_date DATE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
-```ini
-### message table
+CREATE TABLE messages (
+    id SERIAL PRIMARY KEY,
+    text_message TEXT NOT NULL,
+    type VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
-CREATE TABLE `messages` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `text_message` text,
-  `type` varchar(50) DEFAULT NULL,
-  PRIMARY KEY (`id`)
+CREATE TABLE message_log (
+    id SERIAL PRIMARY KEY,
+    contact_id INT REFERENCES contacts_info(id) ON DELETE CASCADE,
+    message_id INT REFERENCES messages(id) ON DELETE SET NULL,
+    sent_message TEXT NOT NULL,
+    date_sent TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status VARCHAR(50) CHECK (status IN ('sent', 'failed', 'pending')) DEFAULT 'pending'
 );
 
 ```
