@@ -1,35 +1,52 @@
 # Automate Celebration Wishes
 
 ## Introduction
-- **Overview:** This project automates the process of sending celebration wishes and birthday messages to your contacts.
-- **Purpose:** The project aims to simplify the process of sending personalized greetings by automating the task of sending *celebration/birthday* messages.
-- **Key Features:** 
-  - Automatically sends celebration/birthday messages via Telegram text message.
-  - Users can create and customize their own message templates.
-  - Notification of successful message delivery.
+
+**Overview:**  
+This project automates the process of sending celebration wishes and birthday messages to your contacts through Telegram.
+
+**Purpose:**  
+The project aims to simplify and personalize the process of sending greetings by automating the message-sending process.
+
+**Key Features:**
+- Automatically sends celebration and birthday messages via Telegram.
+- Supports customizable message templates.
+- Logs successful message deliveries for tracking and auditing.
+
+---
 
 ## Table of Contents
-1. [Project Title](#project-title)
-2. [Introduction](#introduction)
-3. [Table of Contents](#table-of-contents)
-4. [Installation](#installation)
-5. [Usage](#usage)
-6. [Features](#features)
-7. [Configuration](#configuration)
-8. [Contributing](#contributing)
-9. [License](#license)
-10. [Credits](#credits)
-11. [Support](#support)
-12. [FAQ](#faq)
-13. [Changelog](#changelog)
+
+- [Project Title](#automate-celebration-wishes)
+- [Introduction](#introduction)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Features](#features)
+- [Configuration](#configuration)
+- [Database Schema](#database-schema)
+- [Contributing](#contributing)
+- [License](#license)
+- [Credits](#credits)
+- [Support](#support)
+- [FAQ](#faq)
+- [Changelog](#changelog)
+
+---
 
 ## Installation
-- **Prerequisites:** Ensure you have Git and Python installed on your system.
-- **Instructions:**
-  1. Clone the repository:
-     ```bash
-     git clone https://github.com/yourusername/automate-birthday-messages.git
-     ```
+
+### Prerequisites
+
+Ensure you have the following installed on your system:
+- Git
+- Python 3.x
+
+### Instructions
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/automate-birthday-messages.git
+
   2. Install the required dependencies:
      ```bash
      pip install -r requirements.txt
@@ -41,12 +58,17 @@
      ```
 
 ## Usage
-(Provide detailed instructions, example commands, and expected outputs here. Include screenshots if applicable.)
 
-Instanciar a bd com os dados: 
-Correr o script de DDL
-Explicar o insert dos dados dos contactos
-Correr o script: messagem enviada.
+1. **Initialize the database**  
+   Run the DDL script to create the necessary tables.
+
+2. **Insert contact data**  
+   Insert contact rows manually or through the provided insert scripts.
+
+3. **Start the automation**  
+   Launch the main script:
+   ```bash
+   python main.py
 
 
 ## Features
@@ -144,10 +166,12 @@ This project is licensed under the MIT License. See the LICENSE file for details
 (Provide acknowledgments and references here.)
 
 ## Support
-(Provide support contact information or resources here.)
+You can always reach me on telegram, under: @andreia_fa
 
 ## FAQ
-(Add frequently asked questions and answers here.)
+(Future?)
 
 ## Changelog
-(Add details of changes and updates here.)
+v1.0: Initial project setup.
+
+v1.1: Added retry mechanism for message sending.
