@@ -97,6 +97,8 @@ telegram.session_file_name = your_telegram_session_file_name
 
 ## SQL Table Definitions
 
+## SQL Table Definitions
+
 ### contact info table
 
 ```sql
@@ -111,18 +113,19 @@ CREATE TABLE `contacts_info` (
   `Recurrence` varchar(255) DEFAULT NULL,
   `Type` varchar(255) DEFAULT NULL
 );
+```
 
+### message table
 
-**message table**
-
+```sql
 CREATE TABLE `messages` (
   `id` int NOT NULL AUTO_INCREMENT,
   `text_message` text,
   `type` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`id`)
 );
-
-´´´
+```
+```
 
 ##Contributing
 
