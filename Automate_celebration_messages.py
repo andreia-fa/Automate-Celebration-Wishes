@@ -3,6 +3,8 @@ import random
 from datetime import datetime, timedelta
 from telethon import TelegramClient
 import os
+import time
+
 
 
 
@@ -183,28 +185,52 @@ class Automate_messages:
             client = TelegramClient(session_file_path, self.app_id, self.app_hash)
             client.loop.run_until_complete(client.connect())
 
-            if not client.loop.run_until_complete(client.is_user_authorized()):
+            authorized = client.loop.run_until_complete(client.is_user_authorized())
+            if not authorized:
                 logging.warning(f"⚠️ Session is not authorized. Trying manual login...")
 
                 try:
                     client.loop.run_until_complete(client.start())
                     logging.info("✅ Successfully re-authorized session after reconnect.")
+
+                    # 💤 Give Telegram time to stabilize session
+                    time.sleep(5)
+
                 except Exception as auth_error:
                     logging.error(f"❌ Failed to re-authorize session: {auth_error}")
                     return "Session re-authorization failed. Manual intervention needed."
 
-            client.loop.run_until_complete(client.send_message(phone_number, msg))
-            logging.info(f"✅ Message successfully sent to {username_receiver}.")
+            # Double check after login
+            authorized = client.loop.run_until_complete(client.is_user_authorized())
+            if not authorized:
+                logging.error("❌ Still not authorized after manual login.")
+                return "Session not authorized after login."
+
+            # ✅ Retry logic: maximum 2 tries
+            for attempt in range(1, 3):  # 1 and 2
+                try:
+                    logging.debug(f"🚀 Attempt {attempt}: Sending message to {username_receiver}...")
+                    client.loop.run_until_complete(client.send_message(phone_number, msg))
+                    logging.info(f"✅ Message successfully sent to {username_receiver} on attempt {attempt}.")
+                    break  # ✅ Success, exit the loop
+                except Exception as send_error:
+                    logging.error(f"⚠️ Attempt {attempt} failed to send message to {username_receiver}: {send_error}")
+                    if attempt == 1:  # Only wait if we're on the first failure
+                        logging.info(f"⏳ Waiting 5 seconds before retrying...")
+                        time.sleep(5)
+                    else:
+                        logging.error(f"❌ Second attempt also failed for {username_receiver}. Giving up.")
 
         except Exception as e:
-            logging.error(f"❌ Error sending message to {username_receiver}: {e}")
-            return f"Error sending message to: {username_receiver}, error: {e}"
+            logging.error(f"❌ General error sending message to {username_receiver}: {e}")
+            return f"General error sending message to: {username_receiver}, error: {e}"
 
         finally:
             if 'client' in locals():
                 client.disconnect()
 
         return "Success"
+
 
 
 
