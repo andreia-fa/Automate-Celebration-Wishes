@@ -6,8 +6,12 @@
 This project automates the process of sending celebration wishes and birthday messages to your contacts through Telegram.
 
 ## Further Reading
-For a deeper understanding of the project, check out the medium-series articles:
-- [Article 1 Title](link-to-medium-article)
+
+# Medium Article Series
+
+If you want to follow a detailed, step-by-step guide about the Celebration Bot, check out the articles below:
+
+- [Celebration’s Bot (Part I) – Setting up your GCP environment](https://medium.com/@andreia_fa/celebrations-bot-part-i-0cd809440e03) 
 
 **Purpose:**  
 The project aims to simplify and personalize the process of sending greetings by automating the message-sending process.
