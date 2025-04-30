@@ -1,5 +1,19 @@
+# Ignore virtual environment and build folders
+/bin/
+/lib/
+/lib64/
+/__pycache__/
+/.vscode/
+
+# Python environment config
+.pyenv
+pyenv.config
+
+# Python bytecode
 *.pyc
-config.properties
+
+# IDE & session files
 *.session
-celebrations-bot/lib/
-__pycache__/
+
+# Local configuration (do not commit real credentials)
+config.properties
