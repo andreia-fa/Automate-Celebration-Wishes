@@ -1,0 +1,12 @@
+# Ignore virtual environment and build folders
+bin/
+lib/
+lib64/
+__pycache__/
+
+# VSCode project settings
+.vscode/
+
+# Python environment config
+.pyenv
+pyenv.config
