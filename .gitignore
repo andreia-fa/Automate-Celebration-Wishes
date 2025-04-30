@@ -17,3 +17,4 @@ pyenv.config
 
 # Local configuration (do not commit real credentials)
 config.properties
+celebrations_bot_env/
