@@ -1,7 +1,8 @@
 import configparser
 import logging
-from Automate_celebration_messages import Automate_messages
-from celebration_sql_connection import CelebrationSqlConnection
+from celebrations_bot.Automate_celebration_messages import Automate_messages
+from celebrations_bot.celebration_sql_connection import CelebrationSqlConnection
+
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG, format='%(filename)s:%(lineno)d - %(asctime)s - %(levelname)s - %(message)s')
