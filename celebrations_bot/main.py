@@ -37,17 +37,17 @@ def main():
         automate_messages = Automate_messages(session_file_name, app_id, app_hash, CelebrationSqlConnection())
 
         if mysql_cnx:
-            # 🔥 Fix: Removed `today_month_day` from function call
+            # 🔥 Check for contacts with events today
             contacts_with_events = automate_messages.sql_connection.get_contacts_for_today_events(mysql_cnx)
 
             if contacts_with_events:
                 message_to_send = automate_messages.should_event_message_be_sent(mysql_cnx, messages_table)
                 logging.info(message_to_send)
-
-                # Send nurturing messages
-                automate_messages.send_nurturing_messages(mysql_cnx, messages_table)
             else:
                 logging.info("No events scheduled for today.")
+
+            # ✅ Always try sending nurturing messages (even on no-event days)
+            automate_messages.send_nurturing_messages(mysql_cnx, messages_table)
 
             # Close the MySQL connection
             mysql_cnx.close()
