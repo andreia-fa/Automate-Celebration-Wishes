@@ -1,5 +1,5 @@
-from celebrations_bot.Automate_celebration_messages import Automate_messages
-from celebrations_bot.celebration_sql_connection import CelebrationSqlConnection
+from Automate_celebration_messages import Automate_messages
+from celebration_sql_connection import CelebrationSqlConnection
 import configparser
 
 # Load config from properties file
