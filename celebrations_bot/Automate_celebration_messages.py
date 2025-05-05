@@ -57,69 +57,85 @@ class Automate_messages:
 
 
     def send_nurturing_messages(self, mysql_cnx, messages_table):
-        """ 
-        Sends nurturing messages to all contacts who haven't received *any* message 
-        (birthday, nurturing, etc.) in the last two months,
-        and are not receiving a birthday message today.
-        Only sends messages to persons (not puppies or babies). 
+        """
+        Sends nurturing messages to a limited number of 'person' contacts who haven't
+        received any messages in the last 60 days and are not celebrating anything today.
         """
 
         today = datetime.now().date()
         cursor = mysql_cnx.cursor()
 
-        # Get all contacts of type 'person'
-        query_contacts = "SELECT id, Username, mobile_number, birthday_date FROM contacts_info WHERE category = 'person'"
+        # Daily message cap
+        DAILY_NURTURING_LIMIT = 2
+        sent_count = 0
+        sent_numbers = set()
+
+        # 1️⃣ Fetch all 'person' contacts
+        query_contacts = "SELECT id, username, mobile_number, birthday_date, category FROM contacts_info WHERE category = 'person'"
         cursor.execute(query_contacts)
         contacts = cursor.fetchall()
 
-        # Get a list of nurturing messages
+        # Shuffle to avoid same sequence daily
+        random.shuffle(contacts)
+
+        # 2️⃣ Load nurturing messages
         query_message = f"SELECT id, text_message FROM {messages_table} WHERE type = 'nurturing'"
         cursor.execute(query_message)
         nurturing_messages = cursor.fetchall()
 
         if not nurturing_messages:
-            logging.error("❌ No 'nurturing' messages found in the messages table.")
+            logging.error("❌ No nurturing messages found in the database.")
             return
 
         for contact in contacts:
-            contact_id, username, mobile_number, birthday_date = contact
+            contact_id, username, mobile_number, birthday_date, category = contact
 
-            # 1️⃣ Skip if today is their birthday
+            logging.debug(f"👀 Evaluating: {username} (ID {contact_id}) — {mobile_number}")
+
+            # Skip if daily limit reached
+            if sent_count >= DAILY_NURTURING_LIMIT:
+                logging.info("🛑 Daily nurturing limit reached — stopping.")
+                break
+
+            # Skip if birthday is today
             if birthday_date and birthday_date.month == today.month and birthday_date.day == today.day:
-                logging.info(f"🎂 {username} has a birthday today. Skipping nurturing message.")
+                logging.info(f"🎂 {username} has a birthday today. Skipping nurturing.")
                 continue
 
-            # 2️⃣ Skip if any message was sent recently (birthday, nurturing, anything)
+            # Check if any message was sent to this contact recently
             query_last_sent = """
                 SELECT date_sent FROM message_log
                 WHERE contact_id = %s
                 ORDER BY date_sent DESC LIMIT 1
             """
             cursor.execute(query_last_sent, (contact_id,))
-            last_sent_result = cursor.fetchone()
+            last_sent = cursor.fetchone()
 
-            if last_sent_result:
-                last_sent_date = last_sent_result[0].date()
+            if last_sent:
+                last_sent_date = last_sent[0].date()
                 if last_sent_date > (today - timedelta(days=60)):
-                    logging.info(f"⚠️ Some message was sent recently to {username}, skipping nurturing message.")
+                    logging.info(f"⏩ Skipping {username}, message already sent within 60 days.")
                     continue
 
-            # 3️⃣ Select and personalize a nurturing message
-            message_id, message_text = random.choice(nurturing_messages)
-            personalized_message = message_text.replace("{name}", username)
+            # Pick and personalize a message
+            message_id, template = random.choice(nurturing_messages)
+            personalized = self.customize_message(template, username, "nurturing", birthday_date)
 
-            # 4️⃣ Send message
-            send_status = self.send_msg(username, mobile_number, personalized_message)
+            # Send message
+            send_status = self.send_msg(username, mobile_number, personalized)
 
             if send_status == "Success":
                 self.sql_connection.log_message_sent(
-                    mysql_cnx, username, "nurturing", message_id, personalized_message
+                    mysql_cnx, username, "nurturing", message_id, personalized
                 )
-                logging.info(f"✅ Nurturing message sent to {username}.")
+                sent_count += 1
+                sent_numbers.add(mobile_number)
+                logging.info(f"✅ Nurturing message sent to {username}")
             else:
-                logging.error(f"❌ Failed to send nurturing message to {username}.")
+                logging.error(f"❌ Failed to send nurturing message to {username}")
 
         cursor.close()
+
 
 
     def customize_message(self, message_template, name, type_, date_str=None):
