@@ -23,26 +23,38 @@ class Automate_messages:
         if not contacts_with_events:
             logging.info("No contacts with events today.")
             return "No contacts with events today!!!"
-        
-        for name, (event_date, mobile_number, category, event_type) in contacts_with_events.items():
 
-            # 🔥 NEW: Fetch event_type dynamically from category
-            event_type = self.sql_connection.get_event_type(mysql_cnx, name)
-            
-            # Fetch the last sent message
+        for name, (event_date, mobile_number, category, event_type_from_event_table) in contacts_with_events.items():
+
+            # ✅ Get correct contact_id for this username
+            contact_id_query = "SELECT id FROM contacts_info WHERE username = %s"
+            cursor = mysql_cnx.cursor()
+            cursor.execute(contact_id_query, (name,))
+            result = cursor.fetchone()
+            cursor.close()
+
+            if result:
+                contact_id = result[0]
+                # ✅ Now correctly determine event_type using contact_id (fixes 'baby' detection)
+                event_type = self.sql_connection.get_event_type(mysql_cnx, contact_id)
+            else:
+                logging.warning(f"⚠️ Could not resolve contact_id for {name}, using fallback event_type from event table.")
+                event_type = event_type_from_event_table or "birthday"
+
+            # ✅ Get last sent message (to avoid repeats)
             last_message_text = self.sql_connection.get_last_sent_message(mysql_cnx, name)
-            
-            # Fetch a message excluding the last sent one
+
+            # ✅ Pick a new message excluding last one
             message_id, celebration_message = self.sql_connection.get_event_message(mysql_cnx, messages_table, event_type, last_message_text)
-            
+
             if celebration_message:
                 if not self.has_message_been_sent(mysql_cnx, name, event_type):
-                    # Customize the message
+                    # ✅ Correctly personalize the message including #{month_count} if needed
                     customized_message = self.customize_message(celebration_message, name, event_type, event_date)
-                    
-                    logging.info(f"Sending {event_type} message to {name}. Message: {customized_message}")
+
+                    logging.info(f"📨 Sending {event_type} message to {name}. Message: {customized_message}")
                     send_status = self.send_msg(name, mobile_number, customized_message)
-                    
+
                     if send_status == "Success":
                         self.sql_connection.log_message_sent(mysql_cnx, name, event_type, message_id, customized_message)
                         logging.info(f"✅ Sent {event_type} message to {name}: {customized_message}")
@@ -54,6 +66,7 @@ class Automate_messages:
                 logging.error(f"❌ No message found for event type: {event_type}")
 
         return "Event messages processed."
+
 
 
     def send_nurturing_messages(self, mysql_cnx, messages_table):
