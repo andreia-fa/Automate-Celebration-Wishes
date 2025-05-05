@@ -1,10 +1,16 @@
+import configparser
+import logging
+import time
+import os
 from Automate_celebration_messages import Automate_messages
 from celebration_sql_connection import CelebrationSqlConnection
-import configparser
+
+# Setup logging
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Load config from properties file
 config = configparser.ConfigParser()
-config.read('config.properties')
+config.read('../config.properties')  # Assuming script is inside celebrations_bot/
 
 # Telegram setup
 app_id = config.get('Telegram', 'telegram.api_id')
@@ -15,11 +21,11 @@ session_file_name = config.get('Telegram', 'telegram.session_file_name')
 sql_connection = CelebrationSqlConnection()
 bot = Automate_messages(session_file_name, app_id, app_hash, sql_connection)
 
-# 🎉 Send message to Marina
+# ✅ SEND TEST MESSAGE TO MIMI
 result = bot.send_msg(
-    "Marina", 
-    "00351924387148", 
-    "🎈 Even though I'm fashionably late, I couldn’t forget to celebrate Alexandre turning 20 months old! 🧸✨ Wishing you both a day full of love, snuggles, and sweet little surprises. 💕"
+    "Mimi",
+    "004915127926917",
+    "🎈 Thought I’d drop in with some love today — hope everything’s going beautifully for you and Viaan. 💕"
 )
 
 print("Result:", result)
